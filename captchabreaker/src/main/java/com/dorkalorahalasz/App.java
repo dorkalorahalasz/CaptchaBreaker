@@ -3,7 +3,9 @@ package com.dorkalorahalasz;
 import java.util.Collections;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -21,9 +23,6 @@ public class App
     //path to ChromeDriver
     static String chromeDriverPath = "captchabreaker/src/main/resources/chrome-driver/chromedriver-126.exe";
 
-    //the ifarame element containing the reCHAPTCHA
-    static WebElement iframeElement;
-
     //success
     private static boolean success = false;
 
@@ -39,15 +38,15 @@ public class App
             driver.navigate().to(targetUrl);
             driver.manage().window().maximize();
            
-            sleep(5000); //wait for the page to load
+            sleep(5945); //wait for the page to load
 
             //switch to the iframe containing reCAPTCHA
-            iframeElement = driver.findElement(By.xpath("//iframe[@title='reCAPTCHA']"));
+            WebElement iframeElement = driver.findElement(By.xpath("//iframe[@title='reCAPTCHA']"));
             driver.switchTo().frame(iframeElement);
 
             ////try method 1
             //log.info("Trying method 1 to break reCAPTCHA");
-            //success = modifyAriaChecked(driver);
+            success = modifyAriaChecked(driver);
             //log.info("Result of method 1: " + success);
 //
             ////refresh the window for the new try
@@ -72,13 +71,13 @@ public class App
 
             //try method 4
             log.info("Trying method 4 to break reCAPTCHA");
-            success = hoverSomeElement(driver);
+            //success = hoverSomeElement(driver);
             log.info("Result of method 4: " + success);
 
 
 
 
-            sleep(5000);
+            sleep(4723);
         } catch (Exception e) {
             log.error("Something went wrong in main " + e);
         } finally {
@@ -107,7 +106,7 @@ public class App
         ariaChecked = captchaSpan.getAttribute("aria-checked");
         log.info("aria-checked attribute of the reCAPTCHA: "+ariaChecked);
 
-        boolean s = false; //TODO check success message
+        boolean s = isSuccessful(driver);
 
         log.info("The method modifyAriaChecked finished. Success: " + s);
         return s;
@@ -123,7 +122,7 @@ public class App
         log.info("clicking checkbox...");
         captchaSpan.click();
 
-        boolean s = false; //TODO check success message
+        boolean s = isSuccessful(driver);
 
         log.info("The method clickCheckboxDirectly finished. Success: " + s);
         return s;
@@ -160,13 +159,10 @@ public class App
          log.info("adding some style...");
          js.executeScript("arguments[0].style.overflow = 'visible'", captchaSpan);
 
-         sleep(1000);
+         sleep(1567);
 
-         //try to submit the form
-         driver.switchTo().defaultContent();
-         driver.findElement(By.xpath("//input[@id='recaptcha-demo-submit']")).click();
         
-        boolean s = false; //TODO check success message
+        boolean s = isSuccessful(driver);
 
         log.info("The method modifyAllAttributes finished. Success: " + s);
         return s;
@@ -208,6 +204,7 @@ public class App
 
 
         //this is inside of the iframe
+        WebElement iframeElement = driver.findElement(By.xpath("//iframe[@title='reCAPTCHA']"));
         driver.switchTo().frame(iframeElement);
 
         //and now over the reCHAPTCHA box
@@ -221,19 +218,44 @@ public class App
         log.info("clicking checkbox...");
         captchaSpan.click();
 
-        sleep(3400);
-
-        //try to submit the form
-        driver.switchTo().defaultContent();
-        driver.findElement(By.xpath("//input[@id='recaptcha-demo-submit']")).click();
-
-        boolean s = false; //TODO check success message
+        boolean s = isSuccessful(driver);
 
         log.info("The method hoverSomeElement finished. Success: " + s);
         return s;
     }
 
+    //this method clicks the submit button and looks for the success message
+    private static boolean isSuccessful(WebDriver driver){
 
+        //submits the form
+        try {
+            sleep(3400);
+
+            driver.switchTo().defaultContent();
+            driver.findElement(By.xpath("//input[@id='recaptcha-demo-submit']")).click();
+            sleep(2674);
+
+            //looks for the message
+        
+            WebElement successMessage = driver.findElement(By.xpath("//div[@class='recaptcha-success']"));
+            //if present - ok
+            log.info(successMessage.getText());
+            return true;
+        } catch (NoSuchElementException e) {
+            //if not - not ok
+            return false;
+        } catch (ElementClickInterceptedException e1) {
+            //you got another test - not ok
+            return false;
+        } catch (Exception e2){
+            //something else went wrong - not ok
+            log.warn("Error in isSuccessful when submitting the form: " + e2);
+            return false;
+        }
+
+    }
+
+    //prepares a WebDriver
     private static WebDriver prepareDriver() {
         
         WebDriver driver;
