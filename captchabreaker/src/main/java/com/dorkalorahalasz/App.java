@@ -174,7 +174,7 @@ public class App
 
     //this method hovers over some text element before click
 
-    //RESULT - still not working
+    //RESULT - picture verification
     private static boolean hoverSomeElement(WebDriver driver) {
         log.info("The method hoverSomeElement tries to hover over some elemnts before clicking the checkbox to break it");
 
@@ -220,6 +220,8 @@ public class App
     
         log.info("clicking checkbox...");
         captchaSpan.click();
+
+        sleep(3400);
 
         //try to submit the form
         driver.switchTo().defaultContent();
