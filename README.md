@@ -39,7 +39,13 @@ Click the checkbox, but hover on some other elements first (simulating humans mo
 Just another find-the-bycicles-test -> a better human simulation is needed
 
 #### Method 5 (work in progress)
-Getting the data points of a human mouse movement (planned with Firefox DevTools. Im courious...) and use them for hovering the pixels of the way to the checkbox.
+Getting the data points of a human mouse movement (planned with Firefox DevTools. Im courious...) and use them for hovering the pixels of the way to the checkbox.<br/>
+UPDATE: you are really able to record your mouse movements with firefox using following JS script:<br/>
+`var positions = [];
+document.addEventListener('mousemove', function(event) {
+    positions.push({ x: event.clientX, y: event.clientY });
+}); console.log(positions);`
+
 
 Results coming soon...
 

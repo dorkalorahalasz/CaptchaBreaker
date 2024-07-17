@@ -1,16 +1,23 @@
 package com.dorkalorahalasz;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +29,9 @@ public class App
 
     //path to ChromeDriver
     static String chromeDriverPath = "captchabreaker/src/main/resources/chrome-driver/chromedriver-126.exe";
+
+    //path to csv file containig the coordinates
+    static String csvPath = "captchabreaker/src/main/resources/data_points/data_points.csv";
 
     //success
     private static boolean success = false;
@@ -46,7 +56,7 @@ public class App
 
             ////try method 1
             //log.info("Trying method 1 to break reCAPTCHA");
-            success = modifyAriaChecked(driver);
+            //success = modifyAriaChecked(driver);
             //log.info("Result of method 1: " + success);
 //
             ////refresh the window for the new try
@@ -70,9 +80,17 @@ public class App
             //driver.navigate().refresh();
 
             //try method 4
-            log.info("Trying method 4 to break reCAPTCHA");
+            //log.info("Trying method 4 to break reCAPTCHA");
             //success = hoverSomeElement(driver);
-            log.info("Result of method 4: " + success);
+            //log.info("Result of method 4: " + success);
+
+            ////refresh the window for the new try
+            //driver.navigate().refresh();
+
+            //try method 5
+            log.info("Trying method 5 to break reCAPTCHA");
+            success = moveOnRecordedWay(driver);
+            log.info("Result of method 5: " + success);
 
 
 
@@ -224,6 +242,46 @@ public class App
         return s;
     }
 
+    //this method hovers over the coordinates recorded by a human mouse movement
+
+    //RESULT - 
+    private static boolean moveOnRecordedWay(WebDriver driver) {
+        log.info("The method moveOnRecordedWay tries to hover over coordinates based on a humans mouse movements before clicking the checkbox to break it");
+
+        // Create an instance of Actions class
+        Actions actions = new Actions(driver);
+
+        //getting the data points
+        List<Point> points = loadPointsFromCsv(csvPath);
+        
+        log.info("hovering over the coordinates...");  
+
+
+        for (Point point : points) {
+            try{
+            log.info(point.getX() + " , "+point.getY());
+            actions.moveByOffset(point.getX(), point.getY()).perform();
+            }catch (MoveTargetOutOfBoundsException e){
+                log.info("skipped");
+            }
+            
+            sleep(500);
+        
+
+        }
+
+        // and finally click
+        WebElement captchaSpan = driver.findElement(By.xpath("//span[@id='recaptcha-anchor']"));
+    
+        //log.info("clicking checkbox...");
+        captchaSpan.click();
+
+        boolean s = isSuccessful(driver);
+
+        log.info("The method moveOnRecordedWay finished. Success: " + s);
+        return s;
+    }
+
     //this method clicks the submit button and looks for the success message
     private static boolean isSuccessful(WebDriver driver){
 
@@ -277,6 +335,24 @@ public class App
         driver = new ChromeDriver(chromeOptions);
 
         return driver;
+    }
+
+    public static List<Point> loadPointsFromCsv(String filePath) {
+        List<Point> points = new ArrayList<>();
+        String line;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                int x = Integer.parseInt(values[0]);
+                int y = Integer.parseInt(values[1]);
+                points.add(new Point(x, y));
+            }
+        } catch (IOException e) {
+            log.error("Error when readiing coordinates from csv: "+ e);
+        }
+
+        return points;
     }
 
     protected static void sleep(long millis) {
