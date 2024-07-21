@@ -244,7 +244,7 @@ public class App
 
     //this method hovers over the coordinates recorded by a human mouse movement
 
-    //RESULT - 
+    //RESULT - other test
     private static boolean moveOnRecordedWay(WebDriver driver) {
         log.info("The method moveOnRecordedWay tries to hover over coordinates based on a humans mouse movements before clicking the checkbox to break it");
 
@@ -259,10 +259,10 @@ public class App
 
         for (Point point : points) {
             try{
-            log.info(point.getX() + " , "+point.getY());
+            //log.info(point.getX() + " , "+point.getY());
             actions.moveByOffset(point.getX(), point.getY()).perform();
+            //ignore it for now...TODO
             }catch (MoveTargetOutOfBoundsException e){
-                log.info("skipped");
             }
             
             sleep(500);

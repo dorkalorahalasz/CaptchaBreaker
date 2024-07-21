@@ -47,10 +47,11 @@ document.addEventListener('mousemove', function(event) {
 }); console.log(positions);`
 
 
-Results coming soon...
+Another find-the-bycicles-test **BUT**<br/>
+I found out something during testing... if I set a breakpoint, stop the program and klick the checkbox by hand I still get another test. So it is not just about the moves
 
-#### (Hopefully not needed) Method 6
-...
+#### Method 6
+So here i have to set some parameters for the ChromeDriver instance i guess...
 
 
 
